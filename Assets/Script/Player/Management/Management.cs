@@ -1,12 +1,31 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UniRx;
 
 public class Management : MonoBehaviour
 {
+    [SerializeField] public IntReactiveProperty Money = new IntReactiveProperty(10);
+
     [Header("Player Setting Cell")]
-    [SerializeField] private float speed = 0f;
+    [CanBuy("player", "Speed", "Increase your speed", 10,10)]
+    public int SpeedLevel = 1;
+    [SerializeField] public float speed = 0f;
+
     [SerializeField, Range(0.01f, 1f)] private float movemetnSpeed = 0.7f;
+
+
+    [CanBuy("Player", "Ahaha", "Increase your speed", 10,5)]
+    [SerializeField] public int CurrentHealthLevel = 1;
+
+
+    [SerializeField] public int MaxHealthLevel = 6;
+    private int _minHealth = 10;
+
+
 
     [SerializeField] private Transform playerRotation;
 
