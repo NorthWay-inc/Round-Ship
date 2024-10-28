@@ -10,8 +10,10 @@ using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using YG.Example;
 
-public class ShopController : MonoBehaviour
+
+public class ShopController : BaseSaver
 {
     private Management playerData;
 
@@ -19,25 +21,24 @@ public class ShopController : MonoBehaviour
     [SerializeField] private RectTransform _container;
     [SerializeField] private CompositeDisposable _containerDisposable;
     [SerializeField] private TMP_Text _money;
+
     private void Start()
     {
         //ѕолучаем класс игрока дл€ изучени€ его полей
-        playerData =(Management)FindFirstObjectByType(typeof(Management));
+        playerData = (Management)FindFirstObjectByType(typeof(Management));
 
-        //ќбновление кол-ва валюты при покупке
-        playerData.Money.Subscribe((Money) => { 
-            _money.text = Money.ToString();
-        });
+        CreateShopMenuByTagCanBuy();
+    }
 
-        playerData.Money.Value = 1000;
-
+    private void CreateShopMenuByTagCanBuy()
+    {
         FieldInfo[] fieldInfos = typeof(Management).GetFields(BindingFlags.Instance | BindingFlags.Public);
         foreach (var item in fieldInfos)
         {
-            
             CanBuyAttribute canBuyAttribute = item.GetCustomAttribute<CanBuyAttribute>();
             //≈сли у его есть переменные которые можно прокачивать в магазине то
-            if (canBuyAttribute != null) {
+            if (canBuyAttribute != null)
+            {
                 //—оздаем копию шаблонного пол€
                 GameObject tempObject = Instantiate(_template);
                 tempObject.transform.parent = _container;
@@ -50,27 +51,30 @@ public class ShopController : MonoBehaviour
                 }
                 //Childs.Where((x)=>x.name == "ICON").FirstOrDefault().GetComponent<Image>().sprite = ;
                 //ќбновл€ем состо€ние отображени€
-                UpdateState(Childs,item);
+                UpdateState(Childs, item);
                 ///ѕри нажатии на покупку
-                
 
-                tempObject.GetComponent<Button>().onClick.AddListener(() => {
+                tempObject.GetComponent<Button>().onClick.AddListener(() =>
+                {
                     //ѕолучаем текущий уровень прокачки определенной способности и инкрементируем его
                     int currentLevel = (int)item.GetValue(playerData);
                     //////////////////////////////////////////
                     ///Ћогика списани€ средств тут
-                    if (playerData.Money.Value >= canBuyAttribute.Cost)
+                    if (playerData.Money >= canBuyAttribute.Cost)
                     {
-                        if (canBuyAttribute.MaxLevel == -1 || canBuyAttribute.MaxLevel > currentLevel) {
-                            playerData.Money.Value -= canBuyAttribute.Cost;
+                        if (canBuyAttribute.MaxLevel == -1 || canBuyAttribute.MaxLevel > currentLevel)
+                        {
+                            playerData.Money -= canBuyAttribute.Cost;
+                            _money.text = playerData.Money.ToString();
                             item.SetValue(playerData, currentLevel + 1);
                             UpdateState(Childs, item);
                         }
                     }
                     /////////////////////////////////////
                     //”станавливаем нашему повышаем уровень нашему персонажу
-                    
+
                 });
+                ///сложность фибоначчи от n. можно сделать сложность n
                 //»спользуетс€ дл€ обновлени€ показателей состо€ний
                 void UpdateState(List<GameObject> objects, FieldInfo field)
                 {
@@ -80,7 +84,7 @@ public class ShopController : MonoBehaviour
                     objects.Where((x) => x.name == "Description").FirstOrDefault().GetComponent<TMP_Text>().text = canBuyAttribute.Description;
                     objects.Where((x) => x.name == "Cost").FirstOrDefault().GetComponent<TMP_Text>().text = canBuyAttribute.Cost.ToString();
                 }
-            }  
+            }
         }
     }
 }
@@ -112,3 +116,17 @@ public class CanBuyAttribute : Attribute
         MaxLevel = maxLevel;
     }
 }
+
+//public readonly struct ShopMenuItemForm
+//{
+//    public readonly string Title;
+//    public readonly string Description;
+//    public readonly int Cost;
+//    public readonly int MaxLevel;
+//}
+
+//public readonly struct ShopMenuForm
+//{
+//    public readonly string Title;
+//    public readonly ShopMenuItemForm[] ItemSource;
+//}

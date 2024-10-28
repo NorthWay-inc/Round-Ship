@@ -5,34 +5,54 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UniRx;
+using YG.Example;
+using System;
 
-public class Management : MonoBehaviour
+public class Management : BaseSaver
 {
-    [SerializeField] public IntReactiveProperty Money = new IntReactiveProperty(10);
+    /// <summary>
+    /// Обязательная инициализация базового класса сохранения
+    /// </summary>
+    private void Awake()
+    {
+        base.Init(this);
+    }
+    [Saveable]
+    public int Money = 1000;
+    [Saveable]
+    public int HP = 10;
+
 
     [Header("Player Setting Cell")]
     [CanBuy("player", "Speed", "Increase your speed", 10,10)]
     public int SpeedLevel = 1;
-    [SerializeField] public float speed = 0f;
+    
+    [SerializeField] 
+    public float speed = 0f;
 
-    [SerializeField, Range(0.01f, 1f)] private float movemetnSpeed = 0.7f;
-
+    [SerializeField, Range(0.01f, 1f)] 
+    private float movemetnSpeed = 0.7f;
 
     [CanBuy("Player", "Ahaha", "Increase your speed", 10,5)]
-    [SerializeField] public int CurrentHealthLevel = 1;
+    [SerializeField] 
+    public int CurrentHealthLevel = 1;
 
-
-    [SerializeField] public int MaxHealthLevel = 6;
+    [SerializeField] 
+    public int MaxHealthLevel = 6;
     private int _minHealth = 10;
 
+    [SerializeField] 
+    private Transform playerRotation;
 
-
-    [SerializeField] private Transform playerRotation;
-
-    [HideInInspector] private bool direction;
-    [SerializeField] public bool isUseButton;
+    [HideInInspector] 
+    private bool direction;
+    
+    [SerializeField] 
+    public bool isUseButton;
     public void ManagementButton(bool isRight) { direction = isRight; isUseButton = true; }
     public void DontMove() { isUseButton = false; }
+
+    
 
     private void Update()
     {
@@ -55,5 +75,10 @@ public class Management : MonoBehaviour
 
         if (speed > 0) { speed -= 0.45f * Time.deltaTime; }
         if (speed < 0) { speed += 0.45f * Time.deltaTime; }
+    }
+
+    private void OnDestroy()
+    {
+        Save();
     }
 }
